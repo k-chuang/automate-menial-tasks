@@ -82,8 +82,8 @@ def edit_email_body(date, time_slot):
     :param time_slot: string of time slot which user signed up for
     :return: None
     '''
-    with open("confirmation_email_template.html", "rt") as fin:
-        with open("confirmation_email.html", "w") as fout:
+    with open("html/confirmation_email_template.html", "rt") as fin:
+        with open("html/confirmation_email.html", "w") as fout:
             for line in fin:
                 fout.write(line.replace('[DATE]', date).replace('[TIME]', time_slot))
 
@@ -291,7 +291,7 @@ def initial_email(mailing_list_url):
         exit(1)
 
     # email_html_body = raw_input("Enter the path to the html formatted body of email: \n")
-    email_html_body = 'initial_email.html'
+    email_html_body = 'html/initial_email.html'
     # Reads the content that will compose the body of the email.
     initial_email = read_email_body(email_html_body)
 
@@ -395,7 +395,7 @@ def confirm_email():
 
         # Replaces template email with actual date and time of appointment,and writes to a confirmation_email.html file
         edit_email_body(date, time_slot)
-        confirmation_text = read_email_body("confirmation_email.html")
+        confirmation_text = read_email_body("html/confirmation_email.html")
 
         if "stopped" in str(thread):
             # Thread has been stopped, so prompt user for next steps
