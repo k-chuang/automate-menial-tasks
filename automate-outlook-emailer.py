@@ -1,3 +1,4 @@
+
 import win32com.client
 import time
 import threading
@@ -289,8 +290,8 @@ def initial_email(mailing_list_url):
         print("There are no emails in the given list or all users are blacklisted")
         exit(1)
 
-    email_html_body = raw_input("Enter the path to the html formatted body of email: \n")
-
+    # email_html_body = raw_input("Enter the path to the html formatted body of email: \n")
+    email_html_body = 'initial_email.html'
     # Reads the content that will compose the body of the email.
     initial_email = read_email_body(email_html_body)
 
