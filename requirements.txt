@@ -1,0 +1,4 @@
+pandas==0.17.1
+selenium==3.7.0
+gsheets==0.3
+pypiwin32==219
