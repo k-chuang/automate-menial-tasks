@@ -1,3 +1,4 @@
+#!/bin/env python2.7
 
 import win32com.client
 import time
@@ -56,9 +57,9 @@ def read_email_body(email_html):
     :param email_html: html file containing email body to send
     :return: a read html-formatted email body
     '''
-    initial_email_file = open(email_html, "r")
-    initial_email = initial_email_file.read()
-    return initial_email
+    email_file = open(email_html, "r")
+    email_body_string = email_file.read()
+    return email_body_string
 
 
 def is_email(string):
@@ -152,7 +153,7 @@ def get_subjects(bad_emails):
     return list_of_subjects
 
 
-def user_confirm_email(email_html):
+def user_confirm_email(my_email, email_html):
     '''
     Function for the user to confirm if the email is in the intended form.
 
@@ -160,9 +161,9 @@ def user_confirm_email(email_html):
     :return: True if users confirms, False if not
     '''
     with open(email_html, "r") as confirm_text_file:
-        initial_email = confirm_text_file.read()
+        initial_email_body = confirm_text_file.read()
 
-    email_volunteer("[PERSONAL EMAIL GOES HERE]", "Test Email", initial_email, True, True)
+    email_volunteer(my_email, my_email, "Test Email", initial_email_body, True, True)
     works = raw_input("Does the email appear as you intended (y/n):\n")
     if works == "y":
         return True
@@ -183,12 +184,13 @@ def threaded_function():
     return
 
 
-def email_volunteer(volunteer, subject, body, test=True, oversee=True):
+def email_volunteer(volunteer, my_email, subject, body, test=True, oversee=True):
     '''
     Using a running Microsoft Outlook application, this function emails an individual person
     with subject and html formatted body
 
     :param volunteer: string of volunteer email
+    :param my_email: string of the email that you will be using to email subjects
     :param subject: string containing subject of email
     :param body: string containing html formatted body of the email message
     :param test: boolean value which indicates whether or not emailer is in test mode
@@ -201,7 +203,7 @@ def email_volunteer(volunteer, subject, body, test=True, oversee=True):
     # Create an email message.
     message = emailer.CreateItem(0)
     # If you have multiple emails on your outlook, email on behalf of other alternate email
-    message.SentOnBehalfOfName = "OtherOutlookEmail@outlook.com"
+    message.SentOnBehalfOfName = my_email
     message.To = volunteer
     # Email to CC
     # message.CC = "example@gmail.com"
@@ -226,7 +228,7 @@ def email_volunteer(volunteer, subject, body, test=True, oversee=True):
                                      "or exit (e): \n")
 
                 if decision == "s":
-                    message.To = "MyEmail@gmail.com"
+                    message.To = my_email
                     message.Subject = "SKIPPED"
                     print ("Skipping")
                     message.Send()
@@ -235,7 +237,7 @@ def email_volunteer(volunteer, subject, body, test=True, oversee=True):
                     message.Send()
 
                 elif decision == "e":
-                    message.To = "MyEmail@gmail.com"
+                    message.To = my_email
                     message.Subject = "EXIT WAS CALLED"
                     message.Send()
                     exit(2)
@@ -254,8 +256,7 @@ def initial_email(mailing_list_url):
     :param mailing_list_url: a string containing the url to the Google sheet that contains the mailing list
     :return: None to gracefully end program
     '''
-    blacklist_url = raw_input("Enter the url of the Google sheet containing"
-                               " a column/list of blacklisted emails"
+    blacklist_url = raw_input("Enter the url of the Google sheet containing a column/list of blacklisted emails "
                               "(If no blacklist, type None): \n")
     if blacklist_url != 'None':
         blacklist = create_blacklist(blacklist_url)
@@ -293,10 +294,18 @@ def initial_email(mailing_list_url):
     # email_html_body = raw_input("Enter the path to the html formatted body of email: \n")
     email_html_body = 'html/initial_email.html'
     # Reads the content that will compose the body of the email.
-    initial_email = read_email_body(email_html_body)
+    initial_email_body = read_email_body(email_html_body)
+
+    while True:
+        my_email = raw_input("Enter the Outlook email you would like to use to email the subjects (must be logged in on"
+                             " the Outlook application): \n")
+        if not is_email(my_email):
+            print("The email you entered seems invalid. Try again. \n")
+        else:
+            break
 
     # Double check with user of script to check the html file and email to be sent to other user
-    if not user_confirm_email(email_html_body):
+    if not user_confirm_email(my_email, email_html_body):
         exit(1)
 
     # Ask the user if they would prefer to oversee the emailer bot (recommended use) or
@@ -314,7 +323,7 @@ def initial_email(mailing_list_url):
         # Send the emails
         for email in emails[:number_to_send]:
             print "Now sending email to %s..." % email
-            email_volunteer(email, "Appointment", initial_email, False, False)
+            email_volunteer(email, my_email, "Appointment", initial_email_body, False, False)
             with open("already_emailed.txt", "a") as out_file:
                 out_file.write(email + '\n')
         exit(0)
@@ -344,7 +353,7 @@ def initial_email(mailing_list_url):
                 thread.daemon = True
                 thread.start()
                 time.sleep(1)
-                email_volunteer(email, "Appointment", initial_email, False, True)
+                email_volunteer(email, my_email, "Appointment", initial_email_body, False, True)
 
                 with open("already_emailed.txt", "a") as out_file:
                     out_file.write(email + '\n')
@@ -356,7 +365,7 @@ def initial_email(mailing_list_url):
         else:
             time.sleep(1)
             print "Now sending email to %s..." % email
-            email_volunteer(email, "Appointment", initial_email, False, True)
+            email_volunteer(email, my_email, "Appointment", initial_email_body, False, True)
             with open("already_emailed.txt", "a") as out_file:
                 out_file.write(email + '\n')
 
@@ -375,6 +384,14 @@ def confirm_email():
         blacklist = create_blacklist(blacklist_url)
     else:
         blacklist = []
+
+    while True:
+        my_email = raw_input("Enter the Outlook email you would like to use to email the subjects (must be logged in on"
+                             " the Outlook application): \n")
+        if not is_email(my_email):
+            print("The email you entered seems invalid. Try again. \n")
+        else:
+            break
 
     # all the processing and filtering of subjects is done in get_subjects function
     list_of_subjects = get_subjects(blacklist)
@@ -413,7 +430,7 @@ def confirm_email():
                 thread.daemon = True
                 thread.start()
                 time.sleep(1)
-                email_volunteer(email, "Appointment", initial_email, False, True)
+                email_volunteer(email, my_email,  "Appointment", confirmation_text, False, True)
 
             else:
                 # Stop program by breaking out of loop
@@ -422,14 +439,14 @@ def confirm_email():
         else:
             time.sleep(1)
             print "Now sending email to %s..." % email
-            email_volunteer(email, "Appointment", initial_email, False, True)
+            email_volunteer(email, my_email, "Appointment", confirmation_text, False, True)
             with open("already_emailed.txt", "a") as out_file:
                 out_file.write(email + '\n')
 
 
 def main():
     user_choice = raw_input("Is this the first initial email you are sending to the mailing list (i), "
-                            "or a confirmation of appointment email(c)? "
+                            "or a confirmation of appointment email (c)? "
                             "Please enter 'i' for initial or 'c' for confirmation. \n")
     if user_choice == 'i':
         mailing_list_url = raw_input("Enter the url of the Google sheet containing a mailing list "
