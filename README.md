@@ -1,4 +1,4 @@
-# Automating Menial Tasks using Python Pt.1
+# Automating the Menial Tasks using Python Pt.1
 A cool Python automation project that automates the menial task of sending repetitive emails, such as in scheduling people for appointments.
 
 ## Python script and brief description
